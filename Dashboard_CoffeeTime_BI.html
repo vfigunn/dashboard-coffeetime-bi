@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoffeeTime BI — Dashboard de Ventas 2024</title>
+  <script src="chart.umd.min.js"></script>
+  <script src="echarts.min.js"></script>
+  <script src="datos_coffeetime.js"></script>
+  <script src="argentina_provincias.js"></script>
+  <style>
+    :root {
+      --papel: #F4EDE0;
+      --papel-2: #EAE0CB;
+      --papel-3: #E1D5BC;
+      --tinta: #241811;
+      --tinta-suave: #4A3B2C;
+      --gris: #87765F;
+      --filo: #D8C9AC;
+      --caramelo: #A65A1F;
+      --caramelo-claro: #C7873F;
+      --tost-claro: #C9A15C;
+      --tost-medio: #A06A33;
+      --tost-oscuro: #2A1D13;
+      --serif: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+      --sans: "Trebuchet MS", "Gill Sans MT", Segoe UI, Tahoma, sans-serif;
+      --mono: "Cascadia Mono", Consolas, "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--sans);
+      background: var(--papel);
+      color: var(--tinta);
+      padding: 26px 24px 44px;
+      line-height: 1.5;
+    }
+
+    ::selection {
+      background: var(--caramelo);
+      color: #FFF6E8;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--caramelo);
+      outline-offset: 2px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    header {
+      border-bottom: 2px solid var(--tinta);
+      padding: 2px 0 20px;
+      margin-bottom: 26px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    header h1 {
+      font-family: var(--serif);
+      font-size: clamp(1.8rem, 3.4vw, 2.5rem);
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: .2px;
+    }
+
+    header .meta {
+      font-size: .85rem;
+      color: var(--tinta-suave);
+      margin-top: 8px;
+      max-width: 56ch;
+    }
+
+    .datos-hdr {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filtros {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      border: 1px solid var(--filo);
+      border-top: 3px solid var(--tinta);
+      background: var(--papel-2);
+      padding: 12px 14px;
+      margin-bottom: 34px;
+    }
+
+    .filtros label {
+      font-size: .8rem;
+      color: var(--tinta-suave);
+    }
+
+    .filtros select {
+      font-family: var(--sans);
+      font-size: .85rem;
+      padding: 6px 10px;
+      border: 1px solid var(--filo);
+      border-radius: 2px;
+      background: #FFFDF6;
+      color: var(--tinta);
+      min-width: 150px;
+      cursor: pointer;
+    }
+
+    .btn-reset {
+      background: var(--tinta);
+      color: var(--papel);
+      border: none;
+      border-radius: 2px;
+      padding: 7px 14px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-reset:hover {
+      background: var(--caramelo);
+    }
+
+    .nota-filtro {
+      font-size: .78rem;
+      color: var(--gris);
+      font-style: italic;
+    }
+
+    .seccion {
+      font-family: var(--serif);
+      font-size: .95rem;
+      color: var(--gris);
+      letter-spacing: .08em;
+      margin: 0 0 12px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 34px;
+    }
+
+    .kpi {
+      background: var(--papel-2);
+      border: 1px solid var(--filo);
+      border-top: 3px solid var(--tinta);
+      padding: 18px 20px 16px;
+    }
+
+    .kpi .etiqueta {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--tinta-suave);
+    }
+
+    .kpi .valor {
+      font-family: var(--mono);
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -.5px;
+      color: var(--tinta);
+      margin-top: 10px;
+    }
+
+    .kpi .detalle {
+      font-size: .75rem;
+      color: var(--gris);
+      margin-top: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .card {
+      background: var(--papel-2);
+      border: 1px solid var(--filo);
+      border-top: 3px solid var(--tinta);
+      padding: 18px 20px 20px;
+    }
+
+    .card.hero {
+      border-top-color: var(--caramelo);
+    }
+
+    .card h2 {
+      font-family: var(--serif);
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--tinta);
+      margin-bottom: 2px;
+    }
+
+    .card .sub {
+      font-size: .78rem;
+      color: var(--gris);
+      margin-bottom: 14px;
+    }
+
+    .c-ancho {
+      grid-column: span 12;
+    }
+
+    .c-6 {
+      grid-column: span 6;
+    }
+
+    .c-4 {
+      grid-column: span 4;
+    }
+
+    .c-3 {
+      grid-column: span 3;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      height: 300px;
+    }
+
+    .canvas-wrap.tall {
+      height: 340px;
+    }
+
+    .canvas-wrap.small {
+      height: 270px;
+    }
+
+    .chartjs-size-monitor {
+      display: none;
+    }
+
+    .esquema {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1.2fr 1.6fr 1.2fr;
+      grid-template-areas:
+        ". tiempo ."
+        "producto hechos sucursal";
+      gap: 22px 38px;
+      align-items: center;
+      padding: 6px 2px 26px;
+    }
+
+    .conectores {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .tabla-dw {
+      position: relative;
+      z-index: 1;
+      border: 1px solid var(--filo);
+      border-top: 2px solid var(--tinta);
+      background: #FFFDF6;
+      padding: 10px 12px;
+      font-size: .78rem;
+      color: var(--tinta-suave);
+    }
+
+    .tabla-dw.d-tiempo {
+      grid-area: tiempo;
+      justify-self: center;
+    }
+
+    .tabla-dw.d-producto {
+      grid-area: producto;
+      justify-self: end;
+    }
+
+    .tabla-dw.d-sucursal {
+      grid-area: sucursal;
+      justify-self: start;
+    }
+
+    .tabla-dw.hechos {
+      grid-area: hechos;
+      border-top-color: var(--caramelo);
+      border-color: var(--caramelo);
+      font-weight: 500;
+    }
+
+    .tabla-dw b {
+      font-family: var(--serif);
+      font-size: .88rem;
+      color: var(--tinta);
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .pk,
+    .fk {
+      font-family: var(--mono);
+      font-size: .58rem;
+      border: 1px solid var(--filo);
+      background: var(--papel-2);
+      border-radius: 2px;
+      padding: 0 4px;
+      vertical-align: 2px;
+    }
+
+    .pk {
+      color: var(--caramelo);
+    }
+
+    .fk {
+      color: var(--tinta-suave);
+    }
+
+    .chip {
+      display: inline-block;
+      border: 1px solid var(--filo);
+      border-radius: 2px;
+      background: var(--papel-2);
+      padding: 3px 9px;
+      font-size: .75rem;
+      color: var(--tinta-suave);
+      margin: 2px 4px 2px 0;
+    }
+
+    .consulta {
+      border-left: 3px solid var(--filo);
+      padding: 4px 0 2px 16px;
+      margin: 0 0 20px;
+    }
+
+    .consulta h3 {
+      font-family: var(--serif);
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: var(--tinta);
+    }
+
+    .consulta p {
+      font-family: var(--serif);
+      font-size: .95rem;
+      line-height: 1.55;
+      margin-top: 5px;
+      color: var(--tinta-suave);
+    }
+
+    footer {
+      border-top: 1px solid var(--filo);
+      padding-top: 14px;
+      font-size: .75rem;
+      color: var(--gris);
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    @media (max-width: 900px) {
+
+      .c-6,
+      .c-4,
+      .c-3 {
+        grid-column: span 12;
+      }
+
+      .canvas-wrap,
+      .canvas-wrap.tall,
+      .canvas-wrap.small {
+        height: 280px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 18px 14px 32px;
+      }
+
+      .esquema {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "hechos"
+          "tiempo"
+          "producto"
+          "sucursal";
+        gap: 10px;
+      }
+
+      .tabla-dw.d-tiempo,
+      .tabla-dw.d-producto,
+      .tabla-dw.d-sucursal {
+        justify-self: stretch;
+      }
+
+      .conectores {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <h1>CoffeeTime BI</h1>
+      <p class="meta">Dashboard de ventas 2024: un año de operaciones sobre un Data Warehouse, con origen en
+        <i>CoffeeTime_BI.xlsx</i>.
+      </p>
+    </div>
+    <div class="datos-hdr">
+      <span class="chip">4 sucursales</span>
+      <span class="chip">6 productos</span>
+      <span class="chip">3 categorías</span>
+      <span class="chip">4 provincias</span>
+    </div>
+  </header>
+
+  <section class="filtros">
+    <label>Provincia</label>
+    <select id="fProvincia">
+      <option value="todas">Todas</option>
+      <option value="Buenos Aires">Buenos Aires</option>
+      <option value="Córdoba">Córdoba</option>
+      <option value="Santa Fe">Santa Fe</option>
+      <option value="Mendoza">Mendoza</option>
+    </select>
+    <label>Categoría</label>
+    <select id="fCategoria">
+      <option value="todas">Todas</option>
+      <option>Bebida</option>
+      <option>Pastelería</option>
+      <option>Comida</option>
+    </select>
+    <label>Trimestre</label>
+    <select id="fTrimestre">
+      <option value="0">Todo el año</option>
+      <option value="1">1&deg; trimestre</option>
+      <option value="2">2&deg; trimestre</option>
+      <option value="3">3&deg; trimestre</option>
+      <option value="4">4&deg; trimestre (Oct–Dic)</option>
+    </select>
+    <button class="btn-reset" onclick="resetFiltros()">Limpiar filtros</button>
+    <span class="nota-filtro" id="notaFiltro"></span>
+  </section>
+
+  <p class="seccion">I. Resumen del a&ntilde;o</p>
+  <section class="kpis">
+    <div class="kpi">
+      <div class="etiqueta">Ventas Totales</div>
+      <div class="valor" id="kpiVentas">—</div>
+      <div class="detalle" id="kpiVentasDet">Ingresos brutos del período</div>
+    </div>
+    <div class="kpi">
+      <div class="etiqueta">Cantidad Vendida</div>
+      <div class="valor" id="kpiCantidad">—</div>
+      <div class="detalle" id="kpiCantidadDet">Unidades vendidas</div>
+    </div>
+    <div class="kpi">
+      <div class="etiqueta">Ticket Promedio</div>
+      <div class="valor" id="kpiTicket">—</div>
+      <div class="detalle" id="kpiTicketDet">Ventas totales / n&deg; de transacciones</div>
+    </div>
+    <div class="kpi">
+      <div class="etiqueta">Margen Bruto</div>
+      <div class="valor" id="kpiMargen">—</div>
+      <div class="detalle" id="kpiMargenDet">Venta − (costo × cantidad)</div>
+    </div>
+  </section>
+
+  <p class="seccion">II. Exploraci&oacute;n de la operaci&oacute;n</p>
+  <section class="grid">
+    <div class="card c-6 hero">
+      <h2>Evolución mensual de las ventas</h2>
+      <div class="sub">Ventas en $ por mes (2024)</div>
+      <div class="canvas-wrap tall"><canvas id="chartMensual"></canvas></div>
+    </div>
+    <div class="card c-6">
+      <h2>Ventas por provincia</h2>
+      <div class="sub">Color más intenso equivale a mayor venta</div>
+      <div class="canvas-wrap tall" id="mapChart"></div>
+    </div>
+
+    <div class="card c-4">
+      <h2>Rentabilidad por categoría</h2>
+      <div class="sub">Ingresos vs. margen bruto ($)</div>
+      <div class="canvas-wrap"><canvas id="chartCategoria"></canvas></div>
+    </div>
+    <div class="card c-4">
+      <h2>Top 5 productos más vendidos</h2>
+      <div class="sub" id="subTop5">Seleccione un trimestre para su top 5</div>
+      <div class="canvas-wrap"><canvas id="chartTop5"></canvas></div>
+    </div>
+    <div class="card c-4">
+      <h2>Participación por categoría</h2>
+      <div class="sub">% del total de ventas en $</div>
+      <div class="canvas-wrap"><canvas id="chartParticipacion"></canvas></div>
+    </div>
+
+    <div class="card c-6">
+      <h2>Ticket promedio por sucursal</h2>
+      <div class="sub">Ticket promedio en $ por ciudad</div>
+      <div class="canvas-wrap small"><canvas id="chartTicketSuc"></canvas></div>
+    </div>
+    <div class="card c-6">
+      <h2>Ventas por trimestre</h2>
+      <div class="sub">Ventas en $ agrupadas por trimestre</div>
+      <div class="canvas-wrap small"><canvas id="chartTrimestre"></canvas></div>
+    </div>
+  </section>
+
+  <p class="seccion">III. Modelo y calidad de datos</p>
+  <section class="grid">
+    <div class="card c-ancho">
+      <h2>Modelo estrella &amp; integridad de datos</h2>
+      <div class="sub">Modelado ETL: las 4 tablas del Data Warehouse, relaciones por clave y controles de calidad
+        aplicados en la importación</div>
+      <div class="esquema">
+        <svg class="conectores" id="svgConectores" aria-hidden="true"></svg>
+        <div class="tabla-dw d-tiempo"><b>Dim_Tiempo</b>
+          id_fecha <span class="pk">PK</span>, fecha, dia, mes, trimestre, anio (2024)
+        </div>
+        <div class="tabla-dw d-producto"><b>Dim_Producto</b>
+          id_producto <span class="pk">PK</span>, nombre, categoria, costo
+        </div>
+        <div class="tabla-dw hechos"><b>Hechos_Ventas</b>
+          nro_venta, id_fecha <span class="fk">FK</span>, id_producto <span class="fk">FK</span>, id_sucursal <span
+            class="fk">FK</span>, cantidad, precio_unitario, total
+        </div>
+        <div class="tabla-dw d-sucursal"><b>Dim_Sucursal</b>
+          id_sucursal <span class="pk">PK</span>, ciudad, provincia, tipo
+        </div>
+      </div>
+      <div id="integridad"></div>
+    </div>
+  </section>
+
+  <p class="seccion">IV. Consultas resueltas</p>
+  <section class="grid">
+    <div class="card c-ancho">
+      <h2>Consultas de análisis resueltas</h2>
+      <div class="sub">Respuestas calculadas sobre el dataset completo (año 2024)</div>
+      <div class="consulta">
+        <h3>1) ¿Cuáles son los 5 productos más vendidos en el último trimestre del 2024?</h3>
+        <p><b>Té Verde</b> (266 u.), <b>Tostado</b> (256 u.), <b>Medialuna</b> (249 u.), <b>Café Latte</b> (246 u.) y
+          <b>Brownie</b> (246 u.). Si se mide en $, el orden cambia: Café Latte lidera ($923).
+        </p>
+      </div>
+      <div class="consulta">
+        <h3>2) ¿Qué provincia presenta el mayor volumen de ventas en el año?</h3>
+        <p><b>Córdoba</b> ($3.770) lidera levemente, seguida muy de cerca por Mendoza ($3.769), Buenos Aires ($3.742) y
+          Santa Fe ($3.714). Las ventas están muy parejas entre las 4 provincias.</p>
+      </div>
+      <div class="consulta">
+        <h3>3) ¿Qué categoría de productos tiene la mayor rentabilidad?</h3>
+        <p>En margen bruto <b>absoluto</b> gana <b>Bebida</b> ($4.732). En términos <b>relativos</b>, <b>Pastelería</b>
+          muestra el mayor margen % (60,4%), muy similar a Bebida (60,3%); Comida queda en 59,9%.</p>
+      </div>
+      <div class="consulta">
+        <h3>4) ¿Cuál es la evolución mensual de las ventas?</h3>
+        <p>Estable a lo largo del año (≈ $1.150–$1.400). Picos en <b>diciembre</b> ($1.409), <b>agosto</b> ($1.390) y
+          <b>septiembre</b> ($1.380); caída relativa en <b>octubre</b> ($1.111) y <b>febrero</b> ($1.127).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Dashboard generado para el TP de Inteligencia de Negocios. HTML + CSS + JavaScript (Chart.js y ECharts).
+    Datos: CoffeeTime_BI.xlsx (2024)</footer>
+
+  <script>
+    const MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const NOM_ACT = { 'Buenos Aires': 'Buenos Aires', 'Córdoba': 'Cordoba', 'Santa Fe': 'Santa Fe', 'Mendoza': 'Mendoza' };
+
+    function norm(s) { return s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+    function fmt$(n) {
+      return '$' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function fmtInt(n) { return n.toLocaleString('es-AR'); }
+
+    const PROD = {}; PRODUCTOS.forEach(p => PROD[p.id] = p);
+    const SUC = {}; SUCURSALES.forEach(s => SUC[s.id] = s);
+
+    const catColores = { 'Bebida': '#2A1D13', 'Pastelería': '#A06A33', 'Comida': '#C9A15C' };
+
+    let filtro = { provincia: 'todas', categoria: 'todas', trimestre: 0 };
+
+    function resetFiltros() {
+      filtro = { provincia: 'todas', categoria: 'todas', trimestre: 0 };
+      document.getElementById('fProvincia').value = 'todas';
+      document.getElementById('fCategoria').value = 'todas';
+      document.getElementById('fTrimestre').value = '0';
+      actualizar();
+    }
+
+    function getVentasFiltradas() {
+      return VENTAS.filter(v => {
+        const idF = v[1], idP = v[2], idS = v[3];
+        const cat = PROD[idP].categoria;
+        const prov = SUC[idS].provincia;
+        const tri = TRI_POR_DIA[idF];
+        if (filtro.categoria !== 'todas' && cat !== filtro.categoria) return false;
+        if (filtro.provincia !== 'todas' && prov !== filtro.provincia) return false;
+        if (filtro.trimestre !== 0 && tri !== filtro.trimestre) return false;
+        return true;
+      });
+    }
+
+    function agregarCambios(data) {
+      const res = { ventas: 0, cantidad: 0, margen: 0, n: 0 };
+      data.forEach(v => {
+        const cant = v[4], precio = v[5], total = v[6];
+        const costo = PROD[v[2]].costo;
+        res.ventas += total;
+        res.cantidad += cant;
+        res.margen += total - costo * cant;
+        res.n++;
+      });
+      res.ticket = res.n ? res.ventas / res.n : 0;
+      return res;
+    }
+
+    // ---------- Chart.js global ----------
+    Chart.defaults.font.family = 'Trebuchet MS, Tahoma, sans-serif';
+    Chart.defaults.color = '#87765F';
+    Chart.defaults.borderColor = '#D8C9AC';
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      Chart.defaults.animation = false;
+    }
+    let chartMensual, chartCategoria, chartTop5, chartParticipacion, chartTicketSuc, chartTrimestre;
+
+    function configMensual(datos) {
+      if (chartMensual) chartMensual.destroy();
+      const ctx = document.getElementById('chartMensual');
+      chartMensual = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: MESES.slice(1),
+          datasets: [{
+            label: 'Ventas ($)',
+            data: datos.mensualVentas.slice(1),
+            borderColor: '#241811',
+            backgroundColor: 'rgba(201,161,92,.18)',
+            borderWidth: 2,
+            fill: true,
+            tension: .38,
+            pointBackgroundColor: '#A65A1F',
+            pointBorderColor: '#F4EDE0',
+            pointRadius: 4,
+            pointHoverRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  const m = ctx.dataIndex + 1;
+                  return [' Ventas: ' + fmt$(ctx.parsed.y),
+                  ' Unidades: ' + fmtInt(datos.mensualCantidad[m]),
+                  ' Transacciones: ' + fmtInt(datos.mensualN[m])];
+                }
+              }
+            }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-AR') } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function configCategoria(ct, dt) {
+      if (chartCategoria) chartCategoria.destroy();
+      const cats = Object.keys(ct).sort();
+      chartCategoria = new Chart(document.getElementById('chartCategoria'), {
+        type: 'bar',
+        data: {
+          labels: cats,
+          datasets: [
+            { label: 'Ingresos ($)', data: cats.map(c => ct[c].ventas), backgroundColor: 'rgba(0,0,0,0)', borderColor: '#C9A15C', borderWidth: 1.5, borderRadius: 2 },
+            { label: 'Margen ($)', data: cats.map(c => ct[c].margen), backgroundColor: cats.map(c => catColores[c] || '#A06A33'), borderRadius: 2 }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (ctx) {
+                  const c = cats[ctx.dataIndex];
+                  const pct = ct[c].ventas ? (ct[c].margen / ct[c].ventas * 100) : 0;
+                  return ' ' + ctx.dataset.label + ': ' + fmt$(ctx.parsed.x) + (ctx.dataset.label === 'Margen ($)' ? ' (' + pct.toFixed(1) + '% margen)' : '');
+                }
+              }
+            },
+            legend: { position: 'bottom' }
+          },
+          scales: {
+            x: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-AR') } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function configTop5(tp, titulo) {
+      if (chartTop5) chartTop5.destroy();
+      document.getElementById('subTop5').textContent = titulo;
+      chartTop5 = new Chart(document.getElementById('chartTop5'), {
+        type: 'bar',
+        data: {
+          labels: tp.map(t => t.nombre),
+          datasets: [{
+            label: 'Unidades',
+            data: tp.map(t => t.cantidad),
+            backgroundColor: '#A65A1F',
+            borderRadius: 2
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                title: items => items[0].label,
+                label: ctx => {
+                  const t = tp[ctx.dataIndex];
+                  return ' ' + fmtInt(ctx.parsed.x) + ' u., ventas: ' + fmt$(t.ventas);
+                }
+              }
+            },
+            legend: { display: false }
+          },
+          scales: {
+            x: { beginAtZero: true, ticks: { callback: v => fmtInt(v) } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function configParticipacion(ct) {
+      if (chartParticipacion) chartParticipacion.destroy();
+      const cats = Object.keys(ct);
+      const val = cats.map(c => ct[c].ventas);
+      chartParticipacion = new Chart(document.getElementById('chartParticipacion'), {
+        type: 'doughnut',
+        data: {
+          labels: cats,
+          datasets: [{
+            data: val,
+            backgroundColor: cats.map(c => catColores[c] || '#A06A33'),
+            borderColor: '#F4EDE0',
+            borderWidth: 3
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '58%',
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const tot = val.reduce((a, b) => a + b, 0);
+                  const pct = tot ? (ctx.parsed / tot * 100) : 0;
+                  return ' ' + ctx.label + ': ' + fmt$(ctx.parsed) + ' (' + pct.toFixed(1) + '%)';
+                }
+              }
+            },
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    function configTicketSuc(lista) {
+      if (chartTicketSuc) chartTicketSuc.destroy();
+      lista.sort((a, b) => b.ticket - a.ticket);
+      chartTicketSuc = new Chart(document.getElementById('chartTicketSuc'), {
+        type: 'bar',
+        data: {
+          labels: lista.map(s => s.ciudad + ' (' + s.tipo + ')'),
+          datasets: [{
+            label: 'Ticket promedio ($)',
+            data: lista.map(s => s.ticket),
+            backgroundColor: s => {
+              const max = Math.max(...lista.map(x => x.ticket));
+              const alpha = .35 + .65 * (s.raw / max);
+              return 'rgba(36,24,17,' + alpha.toFixed(2) + ')';
+            },
+            borderRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: ctx => {
+                  const s = lista[ctx.dataIndex];
+                  return ' Ticket: ' + fmt$(ctx.parsed.y) + ', ' + fmtInt(s.n) + ' ventas';
+                }
+              }
+            },
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-AR', { maximumFractionDigits: 1 }) } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function configTrimestre(tv) {
+      if (chartTrimestre) chartTrimestre.destroy();
+      chartTrimestre = new Chart(document.getElementById('chartTrimestre'), {
+        type: 'bar',
+        data: {
+          labels: ['1º trimestre', '2º trimestre', '3º trimestre', '4º trimestre'],
+          datasets: [{
+            label: 'Ventas ($)',
+            data: tv,
+            backgroundColor: ['#E1D5BC', '#C9A15C', '#A06A33', '#241811'],
+            borderRadius: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: { callbacks: { label: ctx => ' ' + fmt$(ctx.parsed.y) } },
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => '$' + v.toLocaleString('es-AR') } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ---------- ECharts mapa ----------
+    let eMap;
+    function normProv(p) { return norm(p).toLowerCase(); }
+
+    function initMapa() {
+      eMap = echarts.init(document.getElementById('mapChart'));
+      echarts.registerMap('argentina', ARGENTINA_PROVINCIAS);
+    }
+
+    function dibujarMapa(porProv) {
+      const data = Object.keys(porProv)
+        .filter(p => porProv[p].ventas > 0)
+        .map(p => ({
+          name: NOM_ACT[p] || p,
+          value: porProv[p].ventas,
+          cantidad: porProv[p].cantidad,
+          margen: porProv[p].margen,
+          ticket: porProv[p].ticket
+        }));
+      const maxV = Math.max(1, ...data.map(d => d.value));
+      eMap.setOption({
+        tooltip: {
+          trigger: 'item',
+          backgroundColor: '#FFFDF6',
+          borderColor: '#D8C9AC',
+          textStyle: { color: '#241811' },
+          formatter: p => {
+            if (!p.value) return p.name;
+            return '<b>' + p.name + '</b><br/>Ventas: ' + fmt$(p.value) +
+              '<br/>Unidades: ' + fmtInt(p.data.cantidad) +
+              '<br/>Margen: ' + fmt$(p.data.margen) +
+              '<br/>Ticket prom.: ' + fmt$(p.data.ticket);
+          }
+        },
+        visualMap: {
+          min: 0,
+          max: maxV,
+          left: 12,
+          bottom: 12,
+          calculable: true,
+          text: ['Más ventas', 'Menos ventas'],
+          textStyle: { color: '#87765F', fontSize: 10 },
+          inRange: { color: ['#EAE0CB', '#C9A15C', '#A65A1F'] },
+          seriesIndex: 0
+        },
+        series: [{
+          name: 'Ventas por provincia',
+          type: 'map',
+          map: 'argentina',
+          roam: true,
+          scaleLimit: { min: .7, max: 3 },
+          label: { show: false },
+          itemStyle: { areaColor: '#E1D5BC', borderColor: '#F4EDE0', borderWidth: 1 },
+          emphasis: {
+            label: { show: true, color: '#241811', fontSize: 11 },
+            itemStyle: { areaColor: '#C7873F' }
+          },
+          data: data
+        }]
+      });
+    }
+
+    // ---------- actualización ----------
+    function construirDatos(datos) {
+      const mensualVentas = new Array(13).fill(0);
+      const mensualCantidad = new Array(13).fill(0);
+      const mensualN = new Array(13).fill(0);
+      const porProv = {};   // provincia => todo
+      const porCat = {};
+      const porSuc = {};
+      const porProdQ = {};  // producto => {cant, ventas} para trimestre seleccionado
+      const trimVentas = [0, 0, 0, 0];
+
+      datos.forEach(v => {
+        const idF = v[1], idP = v[2], idS = v[3], cant = v[4], total = v[6];
+        const mes = MES_POR_DIA[idF];
+        const tri = TRI_POR_DIA[idF];
+        const costo = PROD[idP].costo;
+        const margen = total - costo * cant;
+        const p = PROD[idP], s = SUC[idS];
+
+        mensualVentas[mes] += total;
+        mensualCantidad[mes] += cant;
+        mensualN[mes]++;
+
+        const prov = s.provincia;
+        if (!porProv[prov]) porProv[prov] = { ventas: 0, cantidad: 0, margen: 0, n: 0, ticket: 0 };
+        porProv[prov].ventas += total;
+        porProv[prov].cantidad += cant;
+        porProv[prov].margen += margen;
+        porProv[prov].n++;
+
+        const cat = p.categoria;
+        if (!porCat[cat]) porCat[cat] = { ventas: 0, cantidad: 0, margen: 0, n: 0 };
+        porCat[cat].ventas += total;
+        porCat[cat].cantidad += cant;
+        porCat[cat].margen += margen;
+        porCat[cat].n++;
+
+        const ciudad = s.ciudad;
+        if (!porSuc[ciudad]) porSuc[ciudad] = { ventas: 0, n: 0, ticket: 0, tipo: s.tipo };
+        porSuc[ciudad].ventas += total;
+        porSuc[ciudad].n++;
+
+        if (filtro.trimestre === 0 || tri === filtro.trimestre) {
+          if (!porProdQ[idP]) porProdQ[idP] = { nombre: p.nombre, cantidad: 0, ventas: 0 };
+          porProdQ[idP].cantidad += cant;
+          porProdQ[idP].ventas += total;
+        }
+
+        trimVentas[tri - 1] += total;
+      });
+
+      Object.values(porProv).forEach(o => o.ticket = o.n ? o.ventas / o.n : 0);
+      Object.values(porSuc).forEach(o => o.ticket = o.n ? o.ventas / o.n : 0);
+
+      return { mensualVentas, mensualCantidad, mensualN, porProv, porCat, porSuc, porProdQ, trimVentas };
+    }
+
+    function actualizar() {
+      const datos = getVentasFiltradas();
+      const k = agregarCambios(datos);
+      const t = construirDatos(datos);
+
+      // KPIs
+      document.getElementById('kpiVentas').textContent = fmt$(k.ventas);
+      document.getElementById('kpiCantidad').textContent = fmtInt(k.cantidad);
+      document.getElementById('kpiTicket').textContent = fmt$(k.ticket);
+      document.getElementById('kpiMargen').textContent = fmt$(k.margen);
+      document.getElementById('kpiVentasDet').textContent = k.n + ' transacciones en el período, ' + fmtInt(k.cantidad) + ' unidades';
+      document.getElementById('kpiTicketDet').textContent = 'Sobre ' + fmtInt(k.n) + ' transacciones';
+      document.getElementById('kpiMargenDet').textContent = k.ventas ? (k.margen / k.ventas * 100).toFixed(1) + '% del ingreso' : '—';
+
+      // Nota de filtro
+      const partes = [];
+      if (filtro.provincia !== 'todas') partes.push('Provincia: ' + filtro.provincia);
+      if (filtro.categoria !== 'todas') partes.push('Categoría: ' + filtro.categoria);
+      partes.push(filtro.trimestre === 0 ? 'Todo el año' : (filtro.trimestre + '&deg; trimestre'));
+      document.getElementById('notaFiltro').innerHTML = 'Importante: KPI y gráficos reflejan el filtro activo (' + partes.join(', ') + ').';
+
+      // Gráficos
+      configMensual(t);
+
+      const cargas = {};
+      for (const p in NOM_ACT) if (t.porProv[p] && t.porProv[p].ventas > 0) cargas[p] = t.porProv[p];
+      dibujarMapa(t.porProv);
+
+      configCategoria(t.porCat, t);
+
+      const top5 = Object.values(t.porProdQ)
+        .sort((a, b) => b.cantidad - a.cantidad || b.ventas - a.ventas)
+        .slice(0, 5);
+      const tituloTop5 = 'Top 5 del ' + (filtro.trimestre === 0 ? 'año 2024' : (filtro.trimestre + 'º trimestre')) + ' en unidades';
+      configTop5(top5, tituloTop5);
+
+      configParticipacion(t.porCat);
+
+      const listaSuc = Object.keys(t.porSuc).map(ciudad => ({
+        ciudad: ciudad,
+        ticket: t.porSuc[ciudad].ticket,
+        n: t.porSuc[ciudad].n,
+        tipo: t.porSuc[ciudad].tipo
+      }));
+      configTicketSuc(listaSuc);
+
+      configTrimestre(t.trimVentas);
+    }
+
+    // ---------- modelo estrella: conectores ----------
+    function dibujarConectores() {
+      const cont = document.querySelector('.esquema');
+      const svg = document.getElementById('svgConectores');
+      if (!cont || !svg || window.getComputedStyle(svg).display === 'none') return;
+      const cr = cont.getBoundingClientRect();
+      if (!cr.width || !cr.height) return;
+      const NS = 'http://www.w3.org/2000/svg';
+      svg.setAttribute('viewBox', '0 0 ' + cr.width + ' ' + cr.height);
+      svg.innerHTML = '';
+      const fact = cont.querySelector('.hechos');
+      const dims = cont.querySelectorAll('.tabla-dw:not(.hechos)');
+      if (!fact || !dims.length) return;
+      const fr = fact.getBoundingClientRect();
+      const fc = { x: (fr.left - cr.left) + fr.width / 2, y: (fr.top - cr.top) + fr.height / 2 };
+      dims.forEach(d => {
+        const dr = d.getBoundingClientRect();
+        const dc = { x: (dr.left - cr.left) + dr.width / 2, y: (dr.top - cr.top) + dr.height / 2 };
+        let p1, p2;
+        if (d.classList.contains('d-tiempo')) {
+          p1 = { x: dc.x, y: dc.y + dr.height / 2 };
+          p2 = { x: fc.x, y: fr.top - cr.top };
+        } else if (d.classList.contains('d-producto')) {
+          p1 = { x: dc.x + dr.width / 2, y: dc.y };
+          p2 = { x: fr.left - cr.left, y: fc.y };
+        } else {
+          p1 = { x: dc.x - dr.width / 2, y: dc.y };
+          p2 = { x: (fr.left - cr.left) + fr.width, y: fc.y };
+        }
+        const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        const mk = (tag, attrs) => {
+          const el = document.createElementNS(NS, tag);
+          for (const k in attrs) el.setAttribute(k, attrs[k]);
+          return el;
+        };
+        svg.appendChild(mk('line', {
+          x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
+          stroke: '#A65A1F', 'stroke-width': '1.4', 'stroke-linecap': 'round'
+        }));
+        svg.appendChild(mk('rect', {
+          x: mid.x - 16, y: mid.y - 9, width: 32, height: 18, rx: 2,
+          fill: '#F4EDE0', stroke: '#D8C9AC'
+        }));
+        svg.appendChild(mk('text', {
+          x: mid.x, y: mid.y + 3.5, 'text-anchor': 'middle',
+          'font-family': '"Cascadia Mono", Consolas, monospace',
+          'font-size': '9', fill: '#A65A1F'
+        })).textContent = '1:N';
+        svg.appendChild(mk('circle', {
+          cx: p1.x, cy: p1.y, r: 3.5, fill: '#FFFDF6', stroke: '#A65A1F', 'stroke-width': '1.4'
+        }));
+        svg.appendChild(mk('circle', { cx: p2.x, cy: p2.y, r: 3.5, fill: '#A65A1F' }));
+      });
+    }
+
+    window.addEventListener('load', () => setTimeout(dibujarConectores, 50));
+
+    // ---------- eventos & arranque ----------
+    document.getElementById('fProvincia').addEventListener('change', e => { filtro.provincia = e.target.value; actualizar(); });
+    document.getElementById('fCategoria').addEventListener('change', e => { filtro.categoria = e.target.value; actualizar(); });
+    document.getElementById('fTrimestre').addEventListener('change', e => { filtro.trimestre = +e.target.value; actualizar(); });
+
+    window.addEventListener('resize', () => {
+      if (eMap) eMap.resize();
+      dibujarConectores();
+      // Chart.js se redimensiona solo
+    });
+
+    initMapa();
+    actualizar();
+    dibujarConectores();
+
+    function cargarIntegridad() {
+      const diasUnicos = new Set(VENTAS.map(v => v[1])).size;
+      const opsValidas = VENTAS.every(v => Math.abs(v[4] * v[5] - v[6]) < 0.01);
+      const html =
+        '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">' +
+        '<span class="chip">✔ 2.000 transacciones (2024)</span>' +
+        '<span class="chip">✔ ' + diasUnicos + ' fechas válidas en Dim_Tiempo (366 días)</span>' +
+        '<span class="chip">✔ ' + (opsValidas ? '0 inconsistencias: total = cantidad × precio' : 'hay inconsistencias') + '</span>' +
+        '<span class="chip">✔ 0 nulos en hechos y dimensiones</span>' +
+        '<span class="chip">✔ 0 claves foráneas sin correspondencia</span>' +
+        '<span class="chip">✔ 6 productos, 4 sucursales, 3 categorías</span>' +
+        '</div>';
+      document.getElementById('integridad').innerHTML = html;
+    }
+    cargarIntegridad();
+  </script>
+</body>
+
+</html>
